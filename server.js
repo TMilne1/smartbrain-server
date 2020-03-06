@@ -1,14 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser')
+const cors = require('cors')
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors());
 
 const database = {
     users: [
         {
             id:123,
-            name:"jonh",
+            name:"john",
             email:"john@gmail.com",
             password:"cookies",
             entries:"0",
@@ -31,6 +33,10 @@ app.get('/', (request, response)=>{
     response.send('this is workng')
 })
 
+app.get('/users', (request, response) => {
+    response.send(database.users)
+})
+
 app.post('/signin',(request,response)=>{
     if (request.body.email === database.users[0].email 
         &&
@@ -44,22 +50,34 @@ app.post('/signin',(request,response)=>{
 
 app.post('/register', (request,response)=>{
     let users = database.users
+    let emailFromBody = request.body.email
+    let Dup = false;
+    let blank = false
     users.forEach(element => {
-        if(element.email === request.body.email){
-            response.json("That user is already registered")
+        console.log(element.email, '------', request.body.email)
+        if (emailFromBody === undefined){
+            console.log("characters cant be blank")
+            Dup = true;
+        }
+        else if(element.email === emailFromBody){
+            
+             response.json("That user is already registered")
         }
     });
-    users.push(
-        {
-            id:users[users.length-1].id + 1,
-            name: request.body.name || '',
-            email: request.body.email,
-            password: request.body.password,
-            entries: "0",
-            joined: new Date()
-        }
-    )
-    response.json(database)
+    if (!Dup && !blank){
+        users.push(
+            {
+                id:users[users.length-1].id + 1,
+                name: request.body.name || '',
+                email: request.body.email,
+                password: request.body.password,
+                entries: "0",
+                joined: new Date()
+            }
+        )
+        response.json(users[users.length -1])
+    }
+    
 })
 
 app.get('/profile/:id',(request,response)=>{
@@ -83,7 +101,7 @@ app.put('/image', (request,response)=>{
 
 })
 
-app.listen(4000,()=>{
+app.listen(3001,()=>{
     console.log("------------------")
-    console.log("app is listening on port 4000")
+    console.log("app is listening on port 3001")
 });
